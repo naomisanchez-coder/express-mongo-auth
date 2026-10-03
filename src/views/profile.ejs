@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Perfil - JWT Auth App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="grey lighten-4">
+
+<nav class="teal darken-2">
+    <div class="nav-wrapper container">
+        <a href="#" class="brand-logo"><i class="material-icons">account_box</i>Mi Cuenta</a>
+        <ul class="right">
+            <li><a href="#" id="backBtn"><i class="material-icons left">arrow_back</i>Volver</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container" style="margin-top: 30px;">
+    <div class="row">
+        <div class="col s12 m8 offset-m2">
+            <div class="card z-depth-2" style="border-radius: 12px; padding: 20px;">
+                <div class="center-align">
+                    <img id="pImg" src="https://via.placeholder.com/150" class="circle responsive-img" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #004d40;">
+                    <h4 id="pName" style="margin-top: 10px; font-weight: bold;">Cargando...</h4>
+                </div>
+
+                <div class="divider" style="margin: 20px 0;"></div>
+
+                <div class="row">
+                    <div class="col s6"><strong>Correo:</strong> <p id="pEmail">-</p></div>
+                    <div class="col s6"><strong>Teléfono:</strong> <p id="pPhone">-</p></div>
+                    <div class="col s6"><strong>Edad:</strong> <p id="pAge">-</p></div>
+                    <div class="col s6"><strong>Dirección:</strong> <p id="pAddress">-</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+    const token = sessionStorage.getItem('jwtToken');
+    if (!token) window.location.href = '/signIn';
+
+    async function loadProfile() {
+        try {
+            const res = await fetch('/api/users/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const user = await res.json();
+
+            document.getElementById('pName').textContent = `${user.name} ${user.lastName || ''}`;
+            document.getElementById('pEmail').textContent = user.email;
+            document.getElementById('pPhone').textContent = user.phoneNumber || 'No especificado';
+            document.getElementById('pAge').textContent = user.age ? `${user.age} años` : 'No calculada';
+            document.getElementById('pAddress').textContent = user.address || 'No registrada';
+            if (user.url_profile) document.getElementById('pImg').src = user.url_profile;
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+        const roles = JSON.parse(sessionStorage.getItem('userRoles') || '[]');
+        if (roles.includes('admin')) window.location.href = '/dashboard-admin';
+        else window.location.href = '/dashboard-user';
+    });
+
+    loadProfile();
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Usuario - JWT Auth App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; }
+        .hero-banner {
+            background: linear-gradient(135deg, #1565c0, #0d47a1);
+            color: white;
+            padding: 40px 0;
+            border-radius: 0 0 20px 20px;
+        }
+        .profile-card { border-radius: 12px; }
+    </style>
+</head>
+<body>
+
+<nav class="blue darken-3">
+    <div class="nav-wrapper container">
+        <a href="#" class="brand-logo"><i class="material-icons">security</i>User Hub</a>
+        <ul id="nav-mobile" class="right">
+            <li><a href="/profile"><i class="material-icons left">person</i>Mi Perfil</a></li>
+            <li><a href="#" id="logoutBtn"><i class="material-icons left">exit_to_app</i>Salir</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="hero-banner center-align">
+    <h3 id="welcomeMsg">¡Bienvenido!</h3>
+    <p>Panel de Control de Usuario Autenticado</p>
+</div>
+
+<div class="container" style="margin-top: 30px;">
+    <div class="row">
+        <div class="col s12 m8 offset-m2">
+            <div class="card profile-card z-depth-2">
+                <div class="card-content">
+                    <span class="card-title center-align blue-text text-darken-3" style="font-weight: bold;">
+                        Información de tu Sesión
+                    </span>
+                    <div class="divider" style="margin: 15px 0;"></div>
+                    
+                    <ul class="collection">
+                        <li class="collection-item"><strong>Nombre:</strong> <span id="uName">Cargando...</span></li>
+                        <li class="collection-item"><strong>Email:</strong> <span id="uEmail">Cargando...</span></li>
+                        <li class="collection-item"><strong>Edad:</strong> <span id="uAge">Cargando...</span></li>
+                        <li class="collection-item"><strong>Roles:</strong> <span id="uRoles" class="new badge blue left" data-badge-caption=""></span></li>
+                    </ul>
+                </div>
+                <div class="card-action center-align">
+                    <a href="/profile" class="btn blue darken-2 waves-effect">Editar Perfil Completo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+    const token = sessionStorage.getItem('jwtToken');
+    if (!token) window.location.href = '/signIn';
+
+    async function loadUser() {
+        try {
+            const res = await fetch('/api/users/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                sessionStorage.clear();
+                window.location.href = '/signIn';
+                return;
+            }
+
+            const user = await res.json();
+            document.getElementById('welcomeMsg').textContent = `¡Bienvenido, ${user.name}!`;
+            document.getElementById('uName').textContent = `${user.name} ${user.lastName || ''}`;
+            document.getElementById('uEmail').textContent = user.email;
+            document.getElementById('uAge').textContent = user.age ? `${user.age} años` : 'No registrada';
+            document.getElementById('uRoles').textContent = user.roles.join(', ');
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        sessionStorage.clear();
+        window.location.href = '/signIn';
+    });
+
+    loadUser();
+</script>
+</body>
+</html>
