@@ -17,6 +17,26 @@ const UserSchema = new mongoose.Schema({
         ref: 'Role' 
     }],
     name: { 
+        type: String,
+        required: true
+    },
+    lastName: {
+        type: String,
+        required: true
+    },
+    phoneNumber: {
+        type: String,
+        required: true
+    },
+    birthdate: {
+        type: Date,
+        required: true
+    },
+    url_profile: {
+        type: String,
+        default: 'https://via.placeholder.com/150'
+    },
+    address: {
         type: String
     }
 }, { timestamps: true });
